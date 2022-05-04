@@ -7,7 +7,7 @@ from tensorflow.keras.losses import MSE, binary_crossentropy
 def test_base_regr(rendle_dataset, optimizer):
     x_data, y_data = rendle_dataset
     train_dataset = to_tf_dataset(x_data, y_data)
-    num_factors = 2
+    num_factors = 3
     for penalty in [l1_norm, l2_norm, noop_norm]:
         w0, W, V = train(train_dataset, num_factors=num_factors, optimizer=optimizer, loss=MSE, penalty=penalty)
         assert w0.shape == 1
@@ -36,6 +36,7 @@ def test_base_clf(rendle_dataset, optimizer):
 
         # predict multiple instances
         r = fm(to_tf_tensor(x_data), w0, W, V)
+        print([x_data.shape[0], 1])
         assert r.shape == [x_data.shape[0], 1]
 
         # predict single instance

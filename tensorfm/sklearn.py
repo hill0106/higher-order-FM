@@ -26,7 +26,6 @@ import tensorflow as tf
 
 class BaseFactorizationMachine(BaseEstimator):
     """A base class for factorization machines.
-
     :param n_factors: number of latent factor vectors.
     :param max_iter: iterations to convergence.
     :param eta: learning rate for adaptive optimizer.
@@ -62,7 +61,6 @@ class BaseFactorizationMachine(BaseEstimator):
 
 class FactorizationMachineRegressor(BaseFactorizationMachine, RegressorMixin):
     """A factorization machine regressor, trained by minimising MSE.
-
     :param n_factors: number of latent factor vectors.
     :param max_iter: iterations to convergence.
     :param eta: learning rate for adaptive optimizer.
@@ -94,9 +92,7 @@ class FactorizationMachineRegressor(BaseFactorizationMachine, RegressorMixin):
 
     def fit(self, X, y):
         """Fit a factorization machine regressor.
-
         Internally, X and y are converted to a Tensorflow Dataset with types (float32, float32)
-
         :param X: {array-like} of shape (n_samples, n_features)
             Training data.
         :param y: {array-like} of shape (n_samples,) or (n_samples, n_targets)
@@ -122,7 +118,6 @@ class FactorizationMachineRegressor(BaseFactorizationMachine, RegressorMixin):
 
     def predict(self, X):
         """Predict using a factorization machine model.
-
         :param X: array-like , shape (n_samples, n_features).
                     The input samples. Internally, it will be converted to a float32 Tensor
                     with shape (n_samples, n_features).
@@ -147,7 +142,6 @@ class FactorizationMachineRegressor(BaseFactorizationMachine, RegressorMixin):
 class FactorizationMachineClassifier(BaseFactorizationMachine, ClassifierMixin):
     """A factorization machine regressor, trained by minimising
     binary cross-entropy.
-
     :param n_factors: number of latent factor vectors.
     :param max_iter: iterations to convergence.
     :param eta: learning rate for adaptive optimizer.
@@ -179,9 +173,7 @@ class FactorizationMachineClassifier(BaseFactorizationMachine, ClassifierMixin):
 
     def fit(self, X, y):
         """Fit a factorization machine binary classifier.
-
             Internally, X and y are converted to to Dataset with types (float32, float32).
-
             :param X: {array-like} of shape (n_samples, n_features)
                 Training data.
             :param y: {array-like} of shape (n_samples,) or (n_samples, n_targets)
@@ -220,7 +212,6 @@ class FactorizationMachineClassifier(BaseFactorizationMachine, ClassifierMixin):
 
     def predict(self, X, threshold=0.5):
         """Predict using a factorization machine model.
-
         :param X: array-like, shape (n_samples, n_features).
                     The input samples. Internally, it will be converted to a float32 Tensor
                     with shape (n_samples, n_features).

@@ -1,5 +1,8 @@
-from . import logger
+import logging
+#from . import logging
 import tensorflow as tf
+import numpy as np
+from itertools import combinations
 
 
 def l1_norm(V, W, lambda_=0.001):
@@ -24,16 +27,45 @@ def fm(X, w0, W, V):
         tf.pow(tf.tensordot(X, tf.transpose(V), 1), 2),
         tf.tensordot(tf.pow(X, 2), tf.transpose(tf.pow(V, 2)), 1),
     )
+    V_out = 0
+    for i in range(tf.shape(V)[1]-2):
+        v1 = V[:,i:i+1]
+        v2 = V[:,i+1:i+2]
+        v3 = V[:,i+2:i+3]
+        o = tf.math.multiply(tf.math.multiply(v1,v2), v3)
+        V_out += np.sum(o)
+
+    choose = 3
+    data = []
+    for k in range(tf.shape(X)[0]):
+        y = [i for i in combinations(X[k, :].numpy(), choose)]
+        for i in range(len(y)):
+            xx = []
+            for j in range(choose):
+                print(y[i][j], end=' ')
+                xx.append(y[i][j])
+            print()
+            out = 1
+            for x in xx:
+                out *= x
+            out *= V_out
+            #print(out)
+            data.append(out)
+
+
+    third = np.array(data)
 
     if X.ndim > 1:
         linear_terms = tf.reduce_sum(linear_terms, 1, keepdims=True)
         interactions = tf.reduce_sum(interactions, 1, keepdims=True)
+        # third = tf.reduce_sum(third, keepdims=True)
 
     else:
         # One dimensional data: e.g. passed when we call fm() for inference
         linear_terms = tf.reduce_sum(linear_terms)
         interactions = tf.reduce_sum(interactions)
-
+        # third = tf.reduce_sum(third)
+    # third = tf.cast(third, tf.float32)
     return w0 + linear_terms + 0.5 * interactions
 
 
@@ -72,23 +104,24 @@ def train(
         raise ValueError(f"num_factors must be >= 1. Got {num_factors}")
 
     # Get the number of feature columns
-    p = train_dataset.element_spec[0].shape[1]
+    p = train_dataset.shape[1]
     # bias and weights
     w0 = tf.Variable(tf.zeros([1], dtype=dtype))
-    W = tf.Variable(tf.zeros([p], dtype=dtype))
+    W = tf.Variable(tf.zeros([13], dtype=dtype))
     # interaction factors, randomly initialized
     V = tf.Variable(
         tf.random.normal(
-            [num_factors, p], mean=0.0, stddev=0.01, dtype=dtype, seed=random_state
+            [num_factors, 13], mean=0.0, stddev=0.01, dtype=dtype, seed=random_state
         )
     )
-
+    
+    
     for epoch_count in range(max_iter):
         for batch, (x, y) in enumerate(train_dataset):
             with tf.GradientTape() as tape:
-                pred = fm(x, w0, W, V)
+                pred = fm(x, w0, W)
                 loss_ = loss(y, pred) + penalty(V, W, lambda_=1.0 / C)
-            grads = tape.gradient(loss_, [w0, W, V])
+            grads = tape.gradient(loss_, [w0, W, V]) #GradientTape.gradient(target, sources)
             optimizer.apply_gradients(zip(grads, [w0, W, V]))
-            logger.debug(f"Epoch: {epoch_count}, batch: {batch} loss:, {loss_.numpy()}")
+            logging.debug(f"Epoch: {epoch_count}, batch: {batch} loss:, {loss_.numpy()}")
     return w0, W, V
