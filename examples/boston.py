@@ -34,13 +34,13 @@ X_train, X_test, y_train, y_test = data_split
 # X_test = v.transform(X_test)
 # print(X_train)
 
-scaler_X = StandardScaler(with_mean=True, with_std=True)
-X_train = scaler_X.fit_transform(X_train)
-X_test = scaler_X.transform(X_test)
+# scaler_X = StandardScaler(with_mean=True, with_std=True)
+# X_train = scaler_X.fit_transform(X_train)
+# X_test = scaler_X.transform(X_test)
 
-scaler_y = StandardScaler(with_mean=True, with_std=True)
-y_train = scaler_y.fit_transform(y_train.reshape(-1, 1)).ravel()
-y_test = scaler_y.transform(y_test.reshape(-1, 1)).ravel()
+# scaler_y = StandardScaler(with_mean=True, with_std=True)
+# y_train = scaler_y.fit_transform(y_train.reshape(-1, 1)).ravel()
+# y_test = scaler_y.transform(y_test.reshape(-1, 1)).ravel()
 
 # X_train = scipy.sparse.csr_matrix(X_train)
 # X_test = scipy.sparse.csr_matrix(X_test)

@@ -3,6 +3,12 @@ import logging
 import tensorflow as tf
 import numpy as np
 from itertools import combinations
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+physical_devices = tf.config.list_physical_devices('GPU') 
+for gpu_instance in physical_devices: 
+    tf.config.experimental.set_memory_growth(gpu_instance, True)
+
 
 
 def l1_norm(V, W, lambda_=0.001):
@@ -27,33 +33,66 @@ def fm(X, w0, W, V):
         tf.pow(tf.tensordot(X, tf.transpose(V), 1), 2),
         tf.tensordot(tf.pow(X, 2), tf.transpose(tf.pow(V, 2)), 1),
     )
+    # V2out = 0
+    # for i in range(tf.shape(V)[1]-1):
+    #     v1 = tf.reshape(V[:,i:i+1], [-1])
+    #     v2 = tf.reshape(V[:,i+1:i+2], [-1])
+    #     o = np.dot(v1,v2)
+    #     V2out += o
+
+    # choose = 2
+    # second_data = []
+
+    # for k in range(int(tf.shape(X)[0])):
+    #     y = [i for i in combinations(X[k, :].numpy(), choose)]
+    #     for i in range(len(y)):
+    #         xx = []
+    #         for j in range(choose):
+    #             #print(y[i][j], end=' ')
+    #             xx.append(y[i][j])
+    #         #print()
+    #         out = 1
+    #         for x in xx:
+    #             out *= x
+    #         out *= V2out
+    #         #print(out)
+    #         second_data.append(out)
+
+
     V_out = 0
     for i in range(tf.shape(V)[1]-2):
-        v1 = V[:,i:i+1]
-        v2 = V[:,i+1:i+2]
-        v3 = V[:,i+2:i+3]
-        o = tf.math.multiply(tf.math.multiply(v1,v2), v3)
+        v1 = np.array(V[:,i:i+1])
+        v2 = np.array(V[:,i+1:i+2])
+        v3 = np.array(V[:,i+2:i+3])
+        o = np.multiply(np.multiply(v1,v2), v3)
         V_out += np.sum(o)
 
     choose = 3
     data = []
-    for k in range(tf.shape(X)[0]):
-        y = [i for i in combinations(X[k, :].numpy(), choose)]
-        for i in range(len(y)):
+    outcome = []
+    for k in range(int(tf.shape(X)[0])):
+        C = [i for i in combinations(X[k, :].numpy(), choose)]
+        for i in range(len(C)):
             xx = []
             for j in range(choose):
-                print(y[i][j], end=' ')
-                xx.append(y[i][j])
-            print()
+                #print(y[i][j], end=' ')
+                xx.append(C[i][j])
+            #print()
             out = 1
-            for x in xx:
-                out *= x
-            out *= V_out
-            #print(out)
-            data.append(out)
+            for l in xx:
+                out *= l
+                data.append(out)
+        #     #print(out)
+            s= sum(data)
+            s *= V_out
+            outcome.append(s)
+    third = tf.Variable([outcome])
 
-
-    third = np.array(data)
+    # interactions = np.array(second_data)
+    # interactions = tf.reduce_sum(interactions, keepdims=True)
+    # interactions = tf.cast(interactions, tf.float32)
+    # third = tf.reduce_sum(third ,keepdims=True)
+    # third = tf.cast(third, tf.float32)
 
     if X.ndim > 1:
         linear_terms = tf.reduce_sum(linear_terms, 1, keepdims=True)
@@ -64,9 +103,9 @@ def fm(X, w0, W, V):
         # One dimensional data: e.g. passed when we call fm() for inference
         linear_terms = tf.reduce_sum(linear_terms)
         interactions = tf.reduce_sum(interactions)
-        # third = tf.reduce_sum(third)
+    #     third = tf.reduce_sum(third)
     # third = tf.cast(third, tf.float32)
-    return w0 + linear_terms + 0.5 * interactions
+    return w0 + linear_terms #+ interactions #+ third
 
 
 def train(
